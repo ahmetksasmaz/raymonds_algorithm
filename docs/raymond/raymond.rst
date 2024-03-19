@@ -1,7 +1,7 @@
 .. include:: substitutions.rst
 
 ================================
-|Raymond|
+|DistAlgName|
 ================================
 
 

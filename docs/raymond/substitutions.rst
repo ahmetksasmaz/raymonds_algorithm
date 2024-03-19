@@ -1,2 +1,2 @@
-.. |Raymond| replace:: Distributed Algorithm Name 
+.. |DistAlgName| replace:: Raymond's Algorithm
 

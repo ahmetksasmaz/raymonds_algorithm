@@ -5,7 +5,7 @@
 
 .. include:: docs/raymond/substitutions.rst
 
-|Raymond|
+|DistAlgName|
 =======================================================================================
 
 .. toctree::
