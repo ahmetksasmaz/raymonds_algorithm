@@ -1,0 +1,22 @@
+I have to write a documentation about a mutual exclusion algorithm in distributed systems named as Raymond's algorithm. I need an abstract section that has 200-300 words. Make it one paragraph. Do not describe algorithm, just tell the methodologies the algorithm has. Keep it very simple. The audience may lack of knowledge. Tell more about the concept of mutual exclusion and its constraints, drawbacks. And explain about how Raymond's algorithm solves them.
+
+Here is the Raymond's algorithm specifications in Wikipedia:
+
+Raymond's Algorithm is a lock based algorithm for mutual exclusion on a distributed system. It imposes a logical structure (a K-ary tree) on distributed resources. As defined, each node has only a single parent, to which all requests to attain the token are made.
+
+Algorithm
+Nodal properties
+Each node has only one parent to whom received requests are forwarded
+Each node maintains a FIFO queue of requests each time that it sees the token;
+If any node is forwarding privilege to other node and has non-empty queue then it forwards a request message along
+Algorithm
+If a node i (not holding the token) wishes to receive the token in order to enter into its critical section, it sends a request to its parent, node j.
+If node j FIFO is empty, node j shifts i into its FIFO queue; j then issues a request to its parent, k, that it desires the token
+If node j FIFO queue is not empty, it simply shifts i into the queue
+When node k has token and receives the request from j it sends token to j and sets j as its parent
+When node j receives the token from k, it forwards the token to i and i is removed from the queue of j
+If the queue of j is not empty after forwarding the token to i, j must issue a request to i in order to get the token back
+Note: If j wishes to request a token, and its queue is not empty, then it places itself into its own queue. Node j will utilize the token to enter into its critical section if it is at the head of the queue when the token is received.
+
+Complexity
+Raymond's algorithm is guaranteed to be O(log n) per critical section entry if the processors are organized into a K-ary tree. Additionally, each processor needs to store at most O(log n) bits because it must track O(1) neighbors.[1]

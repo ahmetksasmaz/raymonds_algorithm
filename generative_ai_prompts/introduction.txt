@@ -1,0 +1,77 @@
+I have to write a documentation about a mutual exclusion algorithm in distributed systems named as Raymond's algorithm. I need a introduction section that may have 600-800 words. Use very clear language. Explain scientific terms and methodologies in detail. The audience may lack of knowledge. Try to give answers to questions below in your paragraphs.
+
+1. What is mutual exclusion, why we need, what does mutual exclusion concept try to solve?
+2. What are the drawbacks, how they occur?
+3. What are the naive solutions to the problem of mutual exclusion tries to solve?
+4. What are the drawbacks and weak points of these naive solutions?
+5. What does Raymond's algorithm offer about the problem?
+6. Explain Raymond's algorithm's steps.
+7. Explain possible drawbacks of Raymond's algorithm.
+
+Here is the description of Raymond's algorithm in Wikipedia:
+
+Raymond's Algorithm is a lock based algorithm for mutual exclusion on a distributed system. It imposes a logical structure (a K-ary tree) on distributed resources. As defined, each node has only a single parent, to which all requests to attain the token are made.
+
+Algorithm
+Nodal properties
+Each node has only one parent to whom received requests are forwarded
+Each node maintains a FIFO queue of requests each time that it sees the token;
+If any node is forwarding privilege to other node and has non-empty queue then it forwards a request message along
+Algorithm
+If a node i (not holding the token) wishes to receive the token in order to enter into its critical section, it sends a request to its parent, node j.
+If node j FIFO is empty, node j shifts i into its FIFO queue; j then issues a request to its parent, k, that it desires the token
+If node j FIFO queue is not empty, it simply shifts i into the queue
+When node k has token and receives the request from j it sends token to j and sets j as its parent
+When node j receives the token from k, it forwards the token to i and i is removed from the queue of j
+If the queue of j is not empty after forwarding the token to i, j must issue a request to i in order to get the token back
+Note: If j wishes to request a token, and its queue is not empty, then it places itself into its own queue. Node j will utilize the token to enter into its critical section if it is at the head of the queue when the token is received.
+
+Complexity
+Raymond's algorithm is guaranteed to be O(log n) per critical section entry if the processors are organized into a K-ary tree. Additionally, each processor needs to store at most O(log n) bits because it must track O(1) neighbors.[1]
+
+Here is the basic knowledge about mutual exclusion in Wikipedia:
+
+In computer science, mutual exclusion is a property of concurrency control, which is instituted for the purpose of preventing race conditions. It is the requirement that one thread of execution never enters a critical section while a concurrent thread of execution is already accessing said critical section, which refers to an interval of time during which a thread of execution accesses a shared resource or shared memory.
+
+The shared resource is a data object, which two or more concurrent threads are trying to modify (where two concurrent read operations are permitted but, no two concurrent write operations or one read and one write are permitted, since it leads to data inconsistency). Mutual exclusion algorithms ensure that if a process is already performing write operation on a data object [critical section] no other process/thread is allowed to access/modify the same object until the first process has finished writing upon the data object [critical section] and released the object for other processes to read and write upon.
+
+The requirement of mutual exclusion was first identified and solved by Edsger W. Dijkstra in his seminal 1965 paper "Solution of a problem in concurrent programming control",[1][2] which is credited as the first topic in the study of concurrent algorithms.[3]
+
+Problem description
+The problem which mutual exclusion addresses is a problem of resource sharing: how can a software system control multiple processes' access to a shared resource, when each process needs exclusive control of that resource while doing its work? The mutual-exclusion solution to this makes the shared resource available only while the process is in a specific code segment called the critical section. It controls access to the shared resource by controlling each mutual execution of that part of its program where the resource would be used.
+
+A successful solution to this problem must have at least these two properties:
+
+It must implement mutual exclusion: only one process can be in the critical section at a time.
+It must be free of deadlocks: if processes are trying to enter the critical section, one of them must eventually be able to do so successfully, provided no process stays in the critical section permanently.
+Deadlock freedom can be expanded to implement one or both of these properties:
+
+Lockout-freedom guarantees that any process wishing to enter the critical section will be able to do so eventually. This is distinct from deadlock avoidance, which requires that some waiting process be able to get access to the critical section, but does not require that every process gets a turn. If two processes continually trade a resource between them, a third process could be locked out and experience resource starvation, even though the system is not in deadlock. If a system is free of lockouts, it ensures that every process can get a turn at some point in the future.
+A k-bounded waiting property gives a more precise commitment than lockout-freedom. Lockout-freedom ensures every process can access the critical section eventually: it gives no guarantee about how long the wait will be. In practice, a process could be overtaken an arbitrary or unbounded number of times by other higher-priority processes before it gets its turn. Under a k-bounded waiting property, each process has a finite maximum wait time. This works by setting a limit to the number of times other processes can cut in line, so that no process can enter the critical section more than k times while another is waiting.[4]
+Every process's program can be partitioned into four sections, resulting in four states. Program execution cycles through these four states in order:[5]
+
+
+the cycle of sections of a single process
+Non-Critical Section
+Operation is outside the critical section; the process is not using or requesting the shared resource.
+Trying
+The process attempts to enter the critical section.
+Critical Section
+The process is allowed to access the shared resource in this section.
+Exit
+The process leaves the critical section and makes the shared resource available to other processes.
+If a process wishes to enter the critical section, it must first execute the trying section and wait until it acquires access to the critical section. After the process has executed its critical section and is finished with the shared resources, it needs to execute the exit section to release them for other processes' use. The process then returns to its non-critical section.
+
+Types of mutual exclusion devices
+The solutions explained above can be used to build the synchronization primitives below:
+
+Locks (mutexes)
+Readers–writer locks
+Recursive locks
+Semaphores
+Monitors
+Message passing
+Tuple space
+Many forms of mutual exclusion have side-effects. For example, classic semaphores permit deadlocks, in which one process gets a semaphore, another process gets a second semaphore, and then both wait till the other semaphore to be released. Other common side-effects include starvation, in which a process never gets sufficient resources to run to completion; priority inversion, in which a higher-priority thread waits for a lower-priority thread; and high latency, in which response to interrupts is not prompt.
+
+Much research is aimed at eliminating the above effects, often with the goal of guaranteeing non-blocking progress. No perfect scheme is known. Blocking system calls used to sleep an entire process. Until such calls became threadsafe, there was no proper mechanism for sleeping a single thread within a process (see polling)
