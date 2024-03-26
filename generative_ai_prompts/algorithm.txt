@@ -1,0 +1,109 @@
+Paraphrase it, make it simple and one sentence.
+
+In the worst case, the algorithm requires 2 * ( Longest path length of the tree ) message invocation per critical section entry. If all nodes are arranged in a straight line then the longest path length will be N – 1 and thus the algorithm will require 2 * (N -1) message invocation for critical section entry. However, if all nodes generates equal number of REQUEST messages for the privilege, the algorithm will require approximately 2*N / 3 messages per critical section entry. 
+
+Paraphrase it, make it simple and one sentence.
+
+Raymond's algorithm is guaranteed to be O(log n) per critical section entry if the processors are organized into a K-ary tree. Additionally, each processor needs to store at most O(log n) bits because it must track O(1) neighbors.
+
+Paraphrase it, make it simple and shorter.
+
+To ensure mutual exclusion, it is necessary that, at most, one node regards itself
+as privileged. A node becomes privileged when it receives a PRIVILEGE message.
+A privileged node becomes nonprivileged when it sends exactly one PRIVILEGE
+message to another (neighboring) node. PRIVILEGE messages cannot be sent
+by unprivileged nodes. Provided only one node is privileged initially, there will
+continue to be either only one privileged node, or else there is no privileged node
+(during the finite time it takes to transmit the PRIVILEGE message). 
+
+Paraphrase it, make it simple and shorter.
+
+If no node is in the critical section and there are one or more nodes wishing to
+enter the critical section, yet unable to do so, then the system is deadlocked. This
+could occur as a consequence of any of the following:
+(a) No node is privileged and hence the privilege cannot be given to other nodes.
+(b) The privileged node is not aware that other nodes require the privilege.
+(c) The PRIVILEGE message does not eventually reach a node which has
+requested it.
+From Section 4.1 we know that one node must be privileged (or will shortly
+become privileged).
+The collective ASKED variables ensure that (after a finite amount of message
+transmission time) there is a sequence of REQUEST messages (for which no
+PRIVILEGE message has been received in reply) between each node requiring
+the privilege and the privileged node, using the collective HOLDER variables to
+route these REQUEST messages towards the privileged node.
+It is impossible for the PRIVILEGE message to be passed through the tree so
+that REQUEST messages never arrive at the currently privileged node. As the
+tree structure is acyclic, the PRIVILEGE messages cannot outrun the REQUEST
+messages indefinitely. The only possible way for the PRIVILEGE message to
+evade the pursuing REQUEST message would involve the PRIVILEGE message
+traveling from n0de.A to node B, while the REQUEST message is traveling from
+node B to node A. However the logical (and consequent physical) order of
+messages on an edge of the tree prevents this (see Section 3.5). The PRIVILEGE
+message would not be sent from node A unless node A had received a REQUEST
+from node B to which node A had not replied. If node B had sent such a
+REQUEST message, then node B would not have sent the current REQUEST
+message (due to ASKED,).
+Thus the privileged node must eventually become aware that other nodes
+require the privilege. Furthermore the chain of successive REQUEST messages
+causes the collective REQUEST-Qs to provide a path from the privileged node
+to a node that wishes to enter the critical section. Hence the PRIVILEGE
+message is forwarded to a node that has requested the privilege.
+In summary, our algorithm is deadlock-free, mostly due to the acyclic nature
+of a tree eliminating the potential for any “circular wait” situations. 
+
+Paraphrase it, make it simple and shorter.
+
+Suppose node Y holds the privilege (or will do so after the transmission of the
+PRIVILEGE message is complete). When a node X requires the privilege, the
+collective ASKED variables ensure that (after a finite amount of message
+transmission) there is a chain of requests between the requesting node X and the
+privileged node Y. Some of the REQUEST messages may be a direct consequence
+of X’s requirement, while others may have been sent in response to the requirements of other nodes; such REQUEST messages now represent X’s requirements
+as well.
+More rigorously, let P,, P2, . . . , Pk be the sequence of nodes along the path
+from X(P,) to Y(Pk). The tree structure ensures that such a path is unique, and
+that k d N. Then it follows that
+P, E REQUEST-Q,,,
+and Pi-1 E REQUEST-Qil, for 2sisk
+Consider the vector [M,, M?, . . . Mk] where
+M, is the position of P, in REQUEST-Q,,,
+and Mi is the position of Pi-1 in REQUEST-&r> for 2sisk
+The element at the head of the queue is numbered as position 1, the next element
+as position 2, etc. As the queues are held in FIFO order, the position of a
+particular element cannot increase.
+Since the longest possible path in a tree is of length at most N, and the size of
+a REQUEST-&s is at most N (self plus all other N - 1 nodes as neighbors), the
+vector can have only a finite number of possible values. Furthermore, vectors
+can be ranked in a strong total order by the lexicographic “4’ operator.
+Each of the possible actions of the privileged node Y (described below) reduces
+the value of the vector, and therefore successive operations of the successive
+privileged nodes must reduce the vector to El] (i.e., X is the privileged node, and
+“self” is at the head of X’s REQUEST-Q), which allows X to enter the critical
+section.
+Consider the possible values of Mk.
+If k > 1 and M, = 1, then P,-, is at the end of REQUEST-Qi,,, and hence the
+PRIVILEGE will be sent to P,-, (i.e., towards X). If k = 1 and M, = 1, then X
+holds the privilege and X is at the head of X’s REQUEST-Q; hence X will enter
+the critical section. In both cases, the effect on the vector will be:
+[MI, ML’, . . ., M-1, 111 - UM,, Mz, . . . , M-III
+If k > 1 and M1, > 1, then P,-, is not the element at the head of REQUESTQrr. If P, is at the head of its own REQUEST-Q, then P, will enter the critical
+section. The effect on the vector will be:
+M, Mz, . . . , M-1, ML] - UM,, Ms, . . . , Mk-1, Mk - 11
+(Note that if k = 1 and MI, > 1, then X cannot be at the head of its own
+REQUEST-Q, so this situation does not occur.)
+If k > 1 and Mk > 1 and Z (a neighbor of Pk) is at the head of Pk’s REQUEST-
+&, then the PRIVILEGE will next be sent to Z (i.e., away from X). Since Pk’s
+ACM Transactions on Computer Systems, Vol. 7, No. 1, February 1989 
+A Tree-Based Algorithm for Distributed Mutual Exclusion l 69
+REQUEST-Q will still be nonempty, a REQUEST message will also be sent to
+Z to ensure that the privilege is returned. If k = 1 and MI > 1, then node X holds
+the privilege but must pass the privilege to satisfy an earlier request from Z, one
+of X’s neighbors. So X will send the PRIVILEGE followed by a REQUEST for
+the return of the privilege to Z. In either case, the effect on the vector is:
+[M,, Mg, . . . , Mix] -+ [M,, Mz, . . . , I% - 1, M,c+,Il
+The claim that this operation reduces the value of the vector depends on the
+finite upper bounds of k and Mi. It is impossible for the vector to grow infinitely
+long, or for positions in a REQUEST-Q to become infinitely large.
+Hence even the most remote node X cannot be overlooked. Once X’s
+REQUEST message has propagated to either the privileged node or another requesting node, X is guaranteed to enter the critical section eventually. 

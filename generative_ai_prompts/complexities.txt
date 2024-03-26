@@ -1,7 +1,0 @@
-Paraphrase it, make it simple and one sentence.
-
-In the worst case, the algorithm requires 2 * ( Longest path length of the tree ) message invocation per critical section entry. If all nodes are arranged in a straight line then the longest path length will be N – 1 and thus the algorithm will require 2 * (N -1) message invocation for critical section entry. However, if all nodes generates equal number of REQUEST messages for the privilege, the algorithm will require approximately 2*N / 3 messages per critical section entry. 
-
-Paraphrase it, make it simple and one sentence.
-
-Raymond's algorithm is guaranteed to be O(log n) per critical section entry if the processors are organized into a K-ary tree. Additionally, each processor needs to store at most O(log n) bits because it must track O(1) neighbors.
