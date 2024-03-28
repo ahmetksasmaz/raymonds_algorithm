@@ -53,8 +53,9 @@ Distributed Algorithm: |DistAlgName|
         If p ends using critical section
             using_critical_section ← false;
             if fifo_queue is not empty then
-                pop from fifo_queue into ⟨i⟩
+                pop from fifo_queue into ⟨i⟩;
                 parent_index ← find_index(channels, i);
+                has_token ← false;
                 send token message into the channel channels[parent_index];
             end if
 
