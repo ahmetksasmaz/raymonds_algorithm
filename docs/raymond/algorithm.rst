@@ -112,7 +112,7 @@ Lines[76-87] describes what happens when self node receives a token message from
 2. **Deadlock:** If no node is currently in the critical section, but there are nodes that want to enter it and can't, it may lead to deadlock for several reasons: (a) if no node is privileged, (b) if the privileged node doesn't know others need the privilege, or (c) if the PRIVILEGE message doesn't reach the requesting node. However, the algorithm ensures that one node is privileged or soon will be, and using ASKED and HOLDER variables, it guarantees that each node requesting the privilege eventually connects to the privileged node through a sequence of REQUEST messages. This prevents PRIVILEGE messages from bypassing REQUEST messages indefinitely, making the system deadlock-free due to the acyclic nature of the tree structure.
 3. **Starvation:** Suppose node Y holds the privilege or will soon do so. When node X needs the privilege, the ASKED variables ensure there's a chain of requests between X and Y. This chain represents X's request along with others', forming a sequence of nodes from X to Y. Each node along this path has a unique position in the request queues, forming a vector that decreases with each action of the privileged node until X gets the privilege. Various scenarios determine the movement of the privilege message along the path, ensuring that even the furthest node eventually enters the critical section.
 
-**Complexity **
+**Complexity**
 ~~~~~~~~~~
 
 1. **Memory Complexity:** Raymond's algorithm ensures that each critical section entry takes O(log n) time when processors are arranged in a K-ary tree, and each processor only needs to store O(log n) bits to track its O(1) neighbors.

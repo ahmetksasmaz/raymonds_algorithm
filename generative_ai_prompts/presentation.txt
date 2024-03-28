@@ -1,0 +1,14 @@
+I have to prepare a presentation, please describe the problem, mutual exclusion in distributed systems in maximum 75 words, keep it simple, the audience may not have proper knowledge.
+
+explain me the advantages of raymonds algorithm by considering below paragraph, give your explanation as presentation items, keep it simple, the audience may not have proper knowledge
+
+We propose a new algorithm for distributed mutual exclusion for a computer network of N nodes, communicating by messages rather than shared memory. In keeping with earlier work on this problem, we assume that message delivery is guaranteed by the communications network, but neither the time nor order of message arrival can be predicted. Initially we shall assume that nodes are completely reliable, and node failure will be considered in a later section.
+Ricart and Agrawala [3] proposed an algorithm that required 2*(N - 1) messages exchanged for each critical section entry, while the algorithm of Suzuki and Kasami [4] requires at most N messages. Maekawa [2] further reduces the number of messages per critical section entry to O(m). The performance of our algorithm depends on the precise topology of the network spanning tree used, but the average number of messages required is O(log N).
+
+paraphrase and make it shorter below for a presentation, make it itemize
+
+Nodal properties
+
+1. Each node has only one parent to whom received requests are forwarded
+2. Each node maintains a FIFO queue of requests each time that it sees the token;
+3. If any node is forwarding privilege to other node and has non-empty queue then it forwards a request message along

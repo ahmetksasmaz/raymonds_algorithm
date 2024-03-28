@@ -35,7 +35,7 @@
 \def\false{\textbf{F}}
 
 
-\author[John Doe]{John Doe\\\href{mailto:john@example.com}{john@example.com}}
+\author[Ahmet Kürşad Şaşmaz]{Ahmet Kürşad Şaşmaz\\\href{mailto:kursad.sasmaz@metu.edu.tr}{kursad.sasmaz@metu.edu.tr}}
 %\author[J.\,Doe \& J.\,Doe]
 %{%
 %  \texorpdfstring{
@@ -53,8 +53,8 @@
 %  {John Doe \& Jane Doe}
 %}
 
-\title[WINS Beamer Template]{WINS Lab Beamer Presentation Template}
-\subtitle[Short SubTitle]{How to Prepare a Nice Presentation}
+\title[Raymond's Algorithm]{Raymond's Algorithm}
+\subtitle[Mutual Exclusion in Distributed Systems]{Mutual Exclusion in Distributed Systems}
 %\date{} 
 
 \begin{document}
@@ -96,118 +96,253 @@
 %        \sectionpage
 %\end{frame}
 
-\begin{frame}{The problem}
-\framesubtitle{Tell a \alert{STORY} from the background to the conclusion}
-\begin{block}{The Problem Name} 
-Explain the problem here. Instead of using the term `The problem'', please use specific name for the problem. Tell us a story. Provide a picture for the scenario depicting the problem. Set the scene for average audience.
+\begin{frame}{The Problem}
+\framesubtitle{Selecting ownere of a resource without any conflict}
+\begin{block}{Mutual Exclusion in Distributed Systems} 
+Mutual exclusion in distributed systems refers to the challenge of properly accessing a shared resource at any given time by different concurrent processes on different machines. The motivation is ensuring that only one process holds the resource and this resource is orderly accessed for all participants in the system by using coordination and synchronization systems.
 \end{block}
-Spend at least \textbf{1.5-2 minutes per slide} on average.
-
-The introduction should be something like ``I will be presenting title of talk. This is joint work with your colleagues or advisor at institution.'' 
 \note{}
 \end{frame}
 
-\section{The Contribution}
+\section{Our Motivation}
 \begin{frame}
-\frametitle{What is the solution/contribution}
-\framesubtitle{}
-Explain \textbf{YOUR} contributions. Go top-down. Give the brief introduction to the contributions at the beginning of the presentation. A slide should have no more than five to six lines of text or bullets. Prefer figures instead of text: A picture is worth a thousand words.
+\frametitle{Our Motivation}
+\framesubtitle{Do I really need to know everyone in the room to get the permission?}
+Think of a hundred worker company, and there is only one printer.
 \begin{itemize}
-\item Communicate the Key Ideas
-\item Don’t get Bogged Down in Details
-\item Use a Top-down Approach
+    \item How would you feel if you have to ask everyone for permission every time you want to use?
+    \item How would you feel if you are continuously asked for permission even if you don't use the printer?
+    \item How would you feel if someone tries to use the printer and implies that he asked first when it's your turn to use?
+    \item Would you want to work in a thousand worker company in these situations?
+\end{itemize}
+\end{frame}
+\note{A 100 worker company, you have to use printer but only one person can use at a single time, imagine that you have to ask everyone whether they will use the printer or not. This would be a waste of time and effort. What about a 1000 worker company, how much time would you spend to get the permission? Even if you are not using the device, do you imagine that 900 people asking you for permission continuously? You would want to scream that's enough!}
+
+\section{The Proposed Solution}
+\begin{frame}
+\frametitle{The Proposed Solution}
+\framesubtitle{}
+
+Raymond's algorithm is based on K-ary tree where the root holds the token. While changing parents is frequent for a node, the algorithm guarantees that message complexity will be $O(logN)$ if the topology is structured properly.
+
+That has advantages in terms of:
+
+\begin{itemize}
+\item Message overhead
+\item Scalability
+\item Adaptability to topology
+\item Communication sources
 \end{itemize}
 
-The audience will remember at most one single message \textbf{Which message you want to audience to remember? Can you express this message in less than a minute in an elevator?}
-
 \end{frame}
 
 
-\section{Motivation/Importance}
-\begin{frame}
-\frametitle{Motivation/Importance}
-\framesubtitle{``Gain upon solving the problem, pain if not solved'' should be explained}
-Explain why the problem is so important. Throw in a little philosophy if necessary. How does the problem fit into the larger picture? If it involves a model of a real-world phenomenon, then how good is the model? What are its applications? What makes the problem nontrivial? You can return to these issues in the Conclusion, when you can re-address them with the benefit of hindsight.
-\end{frame}
-
-\section{Background/Model/Definitions/Previous Works}
+\section{Background Information and Previous Works}
 
 
-\subsection{Model, Definitions}
+\subsection{Background Information}
 
 \frame{
-\frametitle{Model, Definitions}
-\framesubtitle{Formal definition of a Stochastic Process}
-The use of terminology and jargon should be kept to a minimum, but is impossible to avoid entirely. All terms must be introduced early. It is also useful to remind the audience of the definitions at critical points later in the talk.
+\frametitle{Background Information}
+In distributed systems, mutual exclusion is crucial for preventing race conditions, ensuring that only one process can
+access a critical section at any given time.
 
-Background and this slide can be combined....
+Requirements for a mutual exclusion algorithm in distributed systems are:
+\begin{itemize}
+    \item \textbf{No Deadlock:} Ensure processes don’t indefinitely wait for messages.
+    \item \textbf{No Starvation:} Every process should have a chance to execute its critical section in finite time.
+    \item \textbf{Fairness:} Requests to execute critical sections should be executed in the order they arrive.
+    \item \textbf{Fault Tolerance:} The system should recognize failures and continue functioning without disruption.
+\end{itemize}
 }
 
-\subsection{Background, Previous Works}
-\begin{frame}{Background}
-Research is not usually carried out in a vacuum. There will almost always be other relevant or related work, which you should describe. Present an orderly synopsis of these previously- obtained results. A table is often used for this purpose. Be sure to mention the author of each paper and its date of publication. \textbf{Compare and contrast them with each other and with your paper.}
+\subsection{Previous Works}
+\begin{frame}{Previous Works}
+
+Previous works are based on different methods.
+
+\begin{itemize}
+    \item \textbf{Token Based Algorithm:} Uses a unique token shared among sites, allowing possession of the token to enter the critical section. Examples include the Suzuki-Kasami Algorithm and Raymond’s Algorithm explained in this presentation.
+    \item \textbf{Non-token based approach:} Sites communicate to determine which should execute the critical section next, using timestamps to order requests. Examples include the Ricart-Agrawala Algorithm.
+    \item \textbf{Quorum based approach:} Sites request permission from a subset called a quorum, ensuring mutual exclusion through common subsets. Examples include Maekawa’s Algorithm.
+\end{itemize}
+
 \end{frame}
 
 
 
 
-\section{Contribution}
-\subsection{Main Point 1}
-\begin{frame}{Main Point 1: A Figure}
-\framesubtitle{Abstract the Major Results}
-Describe the key results of the paper. You may present the statements of the major theorems, but not their proofs. You will probably have to get a little technical here, but do so gradually and carefully.
+\section{The Algorithm}
+\subsection{Algorithm Description}
+\begin{frame}{Algorithm Description}
+Raymond's algorithm is based on K-ary tree shaped topology. Every node has these features:
 
-\begin{figure}
-    \centering
-    \includegraphics[scale=0.5]{figures/Chick1.png}
-    \caption{Awesome Image}
-    \label{fig:awesome_image}
-\end{figure}
-\note{
-}
+\begin{itemize}
+    \item Single Parent Relationship
+    \item FIFO Request Queue
+    \item Forwarding Requests
+\end{itemize}
+
 \end{frame}
 
 
-\subsection{Main Point 2}
+\subsection{Pseudocode}
 
 \begin{frame}
-\frametitle{An Example Distributed Algorithm}
-\framesubtitle{Blind Flooding}
-
-
-Blind flooding on an undirected graph is presented in Algorithm~\ref{alg:blindflooding}.
+\frametitle{Algorithm Pseudocode Part 1}
 
 \begin{center}
 \begin{algorithm}[H]
 	\scriptsize
-	\def\algorithmlabel{BlindFlooding}
+	\def\algorithmlabel{Raymond's}
     \caption{\algorithmlabel\ algorithm}
-    \label{alg:blindflooding}
+    \label{alg:raymondsalgorithm}
     \begin{algorithmic}[1]
     	\Implement {\algorithmlabel}{cf} 
-    	\Use {LinkLayerBroadcast} {lbc} 
-    	\Events{Init, MessageFromTop, MessageFromBottom}
-	\Need {}
-
-        \Event {Init}{}
-        		
-        \Event{MessageFromBottom} { $m$ }
-        		\Trig{lbc}{Broadcast} { $m$  }
-        		
-        \Event{MessageFromTop} { $m$ }	
-        		\Trig{lbc}{Broadcast} { $m$  }
+    	\Use {List of Channels} {channels} 
+    	\Use {Integer} {parent\_index} 
+    	\Use {Request Queue} {fifo\_queue}
+    	\Use {Boolean} {using\_critical\_section}
+        \Use {Boolean} {has\_token}
+    	\Events{WantUsingCriticalSection, EndUsingCriticalSection, ReceiveRequestMessage, ReceiveTokenMessage}
+	   \Need {}
     \end{algorithmic}
 \end{algorithm}
 \end{center}
 
-
 \end{frame}
 
 \begin{frame}
-\frametitle{Main Point 2}
-\framesubtitle{Explain the Significance of the Results}
-Pause, and explain the relationships between the formal theorems that you have just presented and the informal description that you gave in the Introduction. Make it clear to the audience that the results do live up to the advance publicity. If the statements of the theorems are very technical then this may take some time. It is time well-spent.
+\frametitle{Algorithm Pseudocode Part 2}
 
+\begin{center}
+\begin{algorithm}[H]
+	\scriptsize
+	\def\algorithmlabel{Raymond's}
+    \caption{\algorithmlabel\ algorithm}
+    \label{alg:raymondsalgorithm}
+    \begin{algorithmic}[1]
+        \Event {WantUsingCriticalSection}{ }
+            \begin{enumerate}
+                \item if using\_critical\_section = false then
+                \item \quad if has\_token = true then
+                \item \quad\quad using\_critical\_section ← true;
+                \item \quad else then
+                \item \quad\quad if fifo\_queue is empty then
+                \item \quad\quad\quad send request message into the channel channels[parent\_index];
+                \item \quad\quad end if
+                \item \quad\quad push -1 into fifo\_queue;
+                \item \quad end if
+                \item end if
+            \end{enumerate}
+    \end{algorithmic}
+\end{algorithm}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{Algorithm Pseudocode Part 3}
+
+\begin{center}
+\begin{algorithm}[H]
+	\scriptsize
+	\def\algorithmlabel{Raymond's}
+    \caption{\algorithmlabel\ algorithm}
+    \label{alg:raymondsalgorithm}
+    \begin{algorithmic}[1]
+        \Event {EndUsingCriticalSection}{ }
+            \begin{enumerate}
+                \item using\_critical\_section ← false;
+                \item if fifo\_queue is not empty then
+                \item \quad pop from fifo\_queue into i
+                \item \quad parent\_index ← find\_index(channels, i);
+                \item \quad send token message into the channel channels[parent\_index];
+                \item end if
+            \end{enumerate}
+    \end{algorithmic}
+\end{algorithm}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{Algorithm Pseudocode Part 4}
+
+\begin{center}
+\begin{algorithm}[H]
+	\scriptsize
+	\def\algorithmlabel{Raymond's}
+    \caption{\algorithmlabel\ algorithm}
+    \label{alg:raymondsalgorithm}
+    \begin{algorithmic}[1]
+        \Event {ReceiveRequestMessage}{ }
+            \begin{enumerate}
+                \item if using\_critical\_section = false then
+                \item \quad if has\_token = true then
+                \item \quad\quad parent\_index ← find\_index(channels, i);
+                \item \quad\quad send token message into the channel channels[parent\_index];
+                \item \quad else then
+                \item \quad\quad if fifo\_queue is empty then
+                \item \quad\quad\quad send request message into the channel channels[parent\_index];
+                \item \quad\quad end if
+                \item \quad\quad push i into fifo\_queue;
+                \item \quad end if
+                \item else then
+                \item \quad push i into fifo\_queue;
+                \item end if
+            \end{enumerate}
+
+    \end{algorithmic}
+\end{algorithm}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{Algorithm Pseudocode Part 5}
+
+\begin{center}
+\begin{algorithm}[H]
+	\scriptsize
+	\def\algorithmlabel{Raymond's}
+    \caption{\algorithmlabel\ algorithm}
+    \label{alg:raymondsalgorithm}
+    \begin{algorithmic}[1]
+        \Event {ReceiveTokenMessage}{ }
+            \begin{enumerate}
+                \item pop from fifo\_queue into j
+                \item if j = -1 then
+                \item \quad has\_token ← true;
+                \item \quad using\_critical\_section ← true;
+                \item else then
+                \item \quad parent\_index ← find\_index(channels, j);
+                \item \quad send token message into the channel channels[parent\_index];
+                \item \quad \quad if fifo\_queue is not empty then
+                \item \quad \quad send request message into the channel channels[parent\_index];
+                \item \quad end if
+                \item end if
+            \end{enumerate}
+
+    \end{algorithmic}
+\end{algorithm}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{Strength of The Algorithm}
+\framesubtitle{Correctness}
+\begin{itemize}
+    \item \textbf{Mutual Exclusion}
+    \item \textbf{Deadlock}
+    \item \textbf{Starvation}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Strength of The Algorithm}
+\framesubtitle{Complexity}
+\begin{itemize}
+    \item \textbf{Memory Complexity:} $O(logN)$
+    \item \textbf{Message Complexity:} $\frac{2N}{3}$
+\end{itemize}
 \end{frame}
 
 \subsection{Main Point 3}
