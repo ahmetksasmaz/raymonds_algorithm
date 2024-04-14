@@ -5,4 +5,4 @@ Code Documentation
    :toctree: generated
    :recursive:
 
-   .. Raymond.Raymond
+   Raymond.Raymond
