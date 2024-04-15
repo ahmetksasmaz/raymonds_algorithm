@@ -111,6 +111,7 @@ class RaymondComponentModel(GenericModel):
                     self.using_critical_section = True
                     self.use_critical_section()
                 else: # We don't have the token
+                    self.want_privilege = True
                     if self.privilege_queue.empty(): # Request token if no one is waiting for it
                         self.privilege_queue.put(self.componentinstancenumber)
                         self.send_down(Event(self, EventTypes.MFRT, self.create_message(RaymondMessageTypes.REQUEST)))
@@ -127,6 +128,7 @@ class RaymondComponentModel(GenericModel):
         """
         self.total_released_critical_section += 1
         self.using_critical_section = False # End using critical section
+        self.want_privilege = False
         if not self.privilege_queue.empty(): # If there are others waiting for token
             element = self.privilege_queue.get()
             self.parent_id = element
@@ -150,6 +152,7 @@ class RaymondComponentModel(GenericModel):
         if self.using_critical_section == False: # If we are not using the token
             if self.has_privilege == True: # If we have the token then give it
                 self.parent_id = node_id
+                self.has_privilege = False
                 self.send_down(Event(self, EventTypes.MFRT, self.create_message(RaymondMessageTypes.TOKEN)))
                 self.total_token_message_sent += 1
                 if not self.privilege_queue.empty(): # Still there are nodes in queue, request token for them
@@ -186,7 +189,7 @@ class RaymondComponentModel(GenericModel):
                 self.total_request_message_sent += 1
 
     # Helper functions
-    def create_message(message_type):
+    def create_message(self, message_type):
         """
         This function is a helper function for creating messages.
         """
@@ -194,10 +197,7 @@ class RaymondComponentModel(GenericModel):
         payload = GenericMessagePayload()
         next_hop = self.parent_id
         interface_id = f"{self.componentinstancenumber}-{next_hop}"
-        if message_type == RaymondMessageTypes.REQUEST:
-            header = GenericMessageHeader(message_type, self.componentinstancenumber, self.parent_id, next_hop, interface_id)
-        elif message_type == RaymondMessageTypes.TOKEN:
-            header = GenericMessageHeader(message_type, self.componentinstancenumber, self.parent_id, next_hop, interface_id)
+        header = GenericMessageHeader(message_type, self.componentinstancenumber, self.parent_id, next_hop, interface_id)
         return GenericMessage(header, payload)
     
     def use_critical_section(self):
