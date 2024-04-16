@@ -31,69 +31,92 @@ Distributed Algorithm: |DistAlgName|
     .. code-block:: RST
         :linenos:
         :caption: Raymond's Algorithm [RaymondsAlgorithm]_.
-        
-        integer list channels, list of ids of connected channels to self node
-        integer parent_index, element index that represents parent channel in channels
-        integer queue fifo_queue, internal fifo queue that orders token requests
+
+        integer self_id, self node id
+        integer parent_id,  parent node id
+        integer queue privilege_queue, internal fifo queue that orders privilege requests
         bool using_critical_section, a boolean represents whether node is using critical section or not
-        bool has_token, a boolean represents whether node has privilege to use critical section
+        bool has_privilege, a boolean represents whether node has privilege to use critical section
+        bool want_privilege, a boolean represents whether self node currently wants privilege or not
+
+        If p initializes
+            if self_id = 0 then
+                has_privilege ← true;
+            end if
 
         If p wants to use critical section
-            if using_critical_section = false then
-                if has_token = true then
-                    using_critical_section ← true;
-                else then
-                    if fifo_queue is empty then
-                        send request message into the channel channels[parent_index];
+            if want_privilege = false then
+                if using_critical_section = false then
+                    if has_privilege = true then
+                        using_critical_section ← true;
+                    else then
+                        want_privilege ← true;
+                        if privilege_queue is empty then
+                            push self_id into privilege_queue;
+                            send request message to node with parent_id;
+                        else then
+                            push self_id into privilege_queue;
+                        end if
                     end if
-                    push ⟨-1⟩ into fifo_queue;
                 end if
             end if
 
         If p ends using critical section
             using_critical_section ← false;
-            if fifo_queue is not empty then
-                pop from fifo_queue into ⟨i⟩;
-                parent_index ← find_index(channels, i);
-                has_token ← false;
-                send token message into the channel channels[parent_index];
+            want_privilege ← false;
+            if privilege_queue is not empty then
+                pop from privilege_queue into ⟨i⟩;
+                parent_index ← i;
+                has_privilege ← false;
+                send token message to node with parent_id;
+                if privilege_queue is not empty then
+                    send request message to node with parent_id;
+                end if
             end if
 
-        If p receives a request message through a channel i
+        If p receives a request message from node i
             if using_critical_section = false then
-                if has_token = true then
-                    parent_index ← find_index(channels, i);
-                    send token message into the channel channels[parent_index];
-                else then
-                    if fifo_queue is empty then
-                        send request message into the channel channels[parent_index];
+                if has_privilege = true then
+                    parent_index ← i;
+                    has_privilege ← false;
+                    send token message to node with parent_id;
+                    if privilege_queue is not empty then
+                        send request message to node with parent_id;
                     end if
-                    push ⟨i⟩ into fifo_queue;
+                else then
+                    if privilege_queue is empty then
+                        push ⟨i⟩ into privilege_queue;
+                        send request message to node with parent_id;
+                    else then
+                        push ⟨i⟩ into privilege_queue;
+                    end if
                 end if
             else then
-                push ⟨i⟩ into fifo_queue;
+                push ⟨i⟩ into privilege_queue;
             end if
         
-        If p receives a token message through a channel i
-            pop from fifo_queue into ⟨j⟩
-            if j = -1 then
-                has_token ← true;
+        If p receives a token message from channel i
+            pop from privilege_queue into ⟨j⟩
+            if j = self_id then
+                has_privilege ← true;
                 using_critical_section ← true;
             else then
-                parent_index ← find_index(channels, j);
-                send token message into the channel channels[parent_index];
-                if fifo_queue is not empty then
-                    send request message into the channel channels[parent_index];
+                parent_index ← j;
+                send token message to node with parent_id;
+                if privilege_queue is not empty then
+                    send request message to node with parent_id;
                 end if
             end if
 
-Lines[41-51] describes what happens when self node wants to use critical section. If the self node is already using the critical section, nothing happens. If not, then token ownership is checked. If the self node has token, it can use critical section without any problem. If the self node doesn't have token, then pushes itself to the internal fifo queue and send request to parent if the only requester is itself. There is no need to send request if there are previous requesters because a request have already sent, it guarantees that token will pass through self node.
+Lines[42-45] This function is called when init event is triggered. Only root(#0) node is affected from this function. Algorithm ensures that the privilege is owned by root initially.
 
-Lines[53-59] describes what happens when self node has privilege and using critical section and finishes its job. When the job is done, if there are waiting nodes in queue, then send the token the first one and set it as parent.
+Lines[47-62] This function is called when self node wants privilege to use critical section. If the self node has already requested for privilege, nothing happens. If the self node is currently using critical section, nothing happens. Otherwise it is time to request for privilege. If we have the privilege (but not using), then we can use it. If we don't have the privilege, we should ask it. If there are others waiting for the privilege, we just add ourselves to queue and wait. If there aren't any other node waiting for the privilege, we request token from our parent for ourselves.
+       
+Lines[64-75] This function is called when self node is done with the critical section. We release the privilege, if there are some nodes that requests privilege in our queue, we forward the token to the first one. If still there are others waiting for the privilege, we request the token from our new parent.
 
-Lines[61-73] describes what happens when self node receives a request message from a connected channel. If we have the token and currently using critical section, then we just add the requester to the queue. The token will eventually have sent to that node. If we have the token but not using it. Then we can just pass to requester channel. If we don't have token, then we should add it to the queue to forward token when time comes. If our fifo queue is empty. Then we should send a request to notify our parent about that we need the token. If we have elements in our queue, that means a request has already sent before, and it guarantees that the token will eventually pass through self node.
+Lines[77-96] This function is called when self node receives a request. If we have the privilege and currently using critical section we simply push the new one into the queue. Otherwise, if we have the token then we pass it to our new parent and if there are any other waiting for privilege in the queue, we request the privilege from our new parent for them. If we don't have the token, if there is no other node in the queue, we request token from our parent. If there are nodes waiting, then just push into the queue.
 
-Lines[76-87] describes what happens when self node receives a token message from a connected channel. If we get the token message, then that means we have unsatisfied requests in our queue. We pop the first element. If the first element is the self node itself, we can take the token and start using critical section. If the first one is not the self node we should forward the token to the requester. We send the token and set the requester as parent. After then, if we don't send a request again to our new parent, the token will never come back because our parent doesn't have current node in its queue. That means our node and its children will not be able to use critical section anymore. In order to prevent this, we send a request.
+Lines[98-109] This function is called when self node receives token message. We get the first node from the queue. If it is us, we use it. If not, we pass the token to it, and finally if still there is nodes in the queue, we request token again for them.
 
 **Example**
 ~~~~~~~~
