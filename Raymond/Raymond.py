@@ -70,7 +70,7 @@ class RaymondComponentModel(GenericModel):
         self.total_request_message_sent = 0
         self.total_token_message_sent = 0
 
-    def on_init(self, event: Event):
+    def on_init(self, eventobj: Event):
         """
         This function is called when init event is triggered.
         Only root(#0) node is affected from this function.
@@ -80,20 +80,20 @@ class RaymondComponentModel(GenericModel):
         if self.componentinstancenumber == 0:
             self.has_privilege = True
 
-    def on_message_from_bottom(self, event: Event):
+    def on_message_from_bottom(self, eventobj: Event):
         """
         This function is called when message is received from bottom.
         Then proper Raymond Event is triggered according to message type.
         """
-        header = event.eventcontent.header
+        header = eventobj.eventcontent.header
         if header.messageto == self.componentinstancenumber:
             if header.messagetype == RaymondMessageTypes.REQUEST:
-                event.event = RaymondEventTypes.GET_REQUEST
+                eventobj.event = RaymondEventTypes.GET_REQUEST
             elif header.messagetype == RaymondMessageTypes.TOKEN:
-                event.event = RaymondEventTypes.GET_TOKEN
-            self.send_self(event)
+                eventobj.event = RaymondEventTypes.GET_TOKEN
+            self.send_self(eventobj)
 
-    def on_want_privilege(self, event: Event):
+    def on_want_privilege(self, eventobj: Event):
         """
         This function is called when self node wants privilege to use critical section.
         If the self node has already requested for privilege, nothing happens.
@@ -119,7 +119,7 @@ class RaymondComponentModel(GenericModel):
                     else: # Put yourself into the request queue
                         self.privilege_queue.put(self.componentinstancenumber)
 
-    def on_release_privilege(self, event: Event):
+    def on_release_privilege(self, eventobj: Event):
         """
         This function is called when self node is done with the critical section.
         We release the privilege, if there are some nodes that requests privilege in our queue,
@@ -139,7 +139,7 @@ class RaymondComponentModel(GenericModel):
                 self.send_down(Event(self, EventTypes.MFRT, self.create_message(RaymondMessageTypes.REQUEST)))
                 self.total_request_message_sent += 1
 
-    def on_get_request(self, event: Event):
+    def on_get_request(self, eventobj: Event):
         """
         This function is called when self node receives a request. If we have the privilege and currently using critical section
         we simply push the new one into the queue. Otherwise, if we have the token then we pass it to our new parent and
@@ -148,7 +148,7 @@ class RaymondComponentModel(GenericModel):
         then just push into the queue.
         """
         self.total_request_message_received += 1
-        node_id = event.eventcontent.payload.node_id
+        node_id = eventobj.eventcontent.header.messagefrom
         if self.using_critical_section == False: # If we are not using the token
             if self.has_privilege == True: # If we have the token then give it
                 self.parent_id = node_id
@@ -168,7 +168,7 @@ class RaymondComponentModel(GenericModel):
         else: # If we have the token and using critical section
             self.privilege_queue.put(node_id)
     
-    def on_get_token(self, event:Event):
+    def on_get_token(self, eventobj:Event):
         """
         This function is called when self node receives token message.
         We get the first node from the queue. If it is us, we use it. If not, we pass the token to it,
@@ -188,13 +188,18 @@ class RaymondComponentModel(GenericModel):
                 self.send_down(Event(self, EventTypes.MFRT, self.create_message(RaymondMessageTypes.REQUEST)))
                 self.total_request_message_sent += 1
 
+    # External trigger functions
+    def trigger_privilege(self):
+        print("ME : [",self.componentinstancenumber,"] triggered for privilege")
+        self.send_self(Event(self, RaymondEventTypes.WANT_PRIVILEGE, None)) # Trigger want privilege
+
     # Helper functions
     def create_message(self, message_type):
         """
         This function is a helper function for creating messages.
         """
         header = None
-        payload = GenericMessagePayload()
+        payload = GenericMessagePayload("")
         next_hop = self.parent_id
         interface_id = f"{self.componentinstancenumber}-{next_hop}"
         header = GenericMessageHeader(message_type, self.componentinstancenumber, self.parent_id, next_hop, interface_id)
