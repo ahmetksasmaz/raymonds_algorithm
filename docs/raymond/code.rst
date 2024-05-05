@@ -6,3 +6,4 @@ Code Documentation
    :recursive:
 
    Raymond.Raymond
+   tests.testraymond

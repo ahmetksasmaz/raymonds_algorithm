@@ -1,3 +1,9 @@
+"""
+Distributed Computing Systems Mutual Exclusion Algorithms
+
+This module implements tester for Raymond's Algorithm
+"""
+
 # AHC Library
 from adhoccomputing.GenericModel import GenericModel
 from adhoccomputing.Generics import Event, EventTypes, ConnectorTypes
@@ -23,9 +29,18 @@ from Raymond.Raymond import RaymondComponentModel
 
 # Poisson event generator
 def next_poisson_event(rate_parameter):
+    """
+    This helper function is for creating an event at particular timestamp that is distributed with respect to Poisson distribution.
+    """
     return -math.log(1.0 - random.random()) / rate_parameter
 
 def create_kary_tree_topology(n, min_child, max_child):
+    """
+    Due to Raymond's Algorithm works on a K-ary tree, this function creates a topology for k-ary tree.
+    It takes node count, minimum child count for every node and maximum child for every node.
+    If min_child == max_child == 2, then the tree is a binary tree.
+    If min_child == max_child == 1, then the tree is a linked list.
+    """
     G = nx.empty_graph(n-1)
     total_number_of_left_node = n-1
     latest_node = 0
@@ -50,6 +65,21 @@ def create_kary_tree_topology(n, min_child, max_child):
 topology = Topology()
 
 def main():
+    """
+    This is the main function for testing.
+    It parses parameters from command line. The parameters are:
+    -n --node: Total number of nodes in the test
+    -m --min-child: Minimum child number that a node must have [at least 1, at most node-1]
+    -M --max-child: Maximum child number that a node can have [at least min-child]
+    -p --privilege: Number of privilege request for random node in a test
+    -r --rate: Poisson rate to generate privilege trigger for random node
+    -s --scale: Using critical section time scale, multiplied by a random integer between [1,3]
+
+    It creates and starts the topology.
+    It creates an privilege request event in time w.r.t. Poisson distribution.
+    Then, it waits for all nodes to stop wanting the privilege.
+    Finally prints the result.
+    """
     parser = argparse.ArgumentParser(description='Raymond\'s Algorithm Tester')
     parser.add_argument('-n','--node', help='Total number of nodes in the test', required=True, type=int)
     parser.add_argument('-m','--min-child', help='Minimum child number that a node must have [at least 1, at most node-1]', required=True, type=int)
