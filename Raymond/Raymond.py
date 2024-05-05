@@ -190,7 +190,6 @@ class RaymondComponentModel(GenericModel):
 
     # External trigger functions
     def trigger_privilege(self):
-        print("ME : [",self.componentinstancenumber,"] triggered for privilege")
         self.send_self(Event(self, RaymondEventTypes.WANT_PRIVILEGE, None)) # Trigger want privilege
 
     # Helper functions

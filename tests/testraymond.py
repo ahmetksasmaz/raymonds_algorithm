@@ -81,17 +81,23 @@ def main():
     for x in range(args["privilege"]):
         time.sleep(next_poisson_event(args["rate"]))
         random_node = random.randint(0, args["node"]-1)
-        print(random_node)
+        print("Node[",random_node,"] triggered for privilege.")
         topology.nodes[random_node].trigger_privilege()
 
     still_working = True
     while still_working:
-        time.sleep(0.1)
+        time.sleep(1)
         still_working = False
+        print("####################")
         for x in range(args["node"]):
             if topology.nodes[x].want_privilege == True:
                 still_working = True
-                break
+                print("# Node[",x,"] : ",
+                list(topology.nodes[x].privilege_queue.queue), " - ",
+                topology.nodes[x].using_critical_section, " - ",
+                topology.nodes[x].has_privilege, " - ",
+                topology.nodes[x].want_privilege)
+                # break
     
     topology.exit()
 
