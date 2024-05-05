@@ -63,6 +63,7 @@ class RaymondComponentModel(GenericModel):
         # Metrics for experiments
         self.experiment_sleep_scaler = 1.0
         self.total_want_privilege = 0
+        self.total_duplicate_want_privilege = 0
         self.total_used_critical_section = 0
         self.total_released_critical_section = 0
         self.total_request_message_received = 0
@@ -118,6 +119,8 @@ class RaymondComponentModel(GenericModel):
                         self.total_request_message_sent += 1
                     else: # Put yourself into the request queue
                         self.privilege_queue.put(self.componentinstancenumber)
+        else:
+            self.total_duplicate_want_privilege += 1
 
     def on_release_privilege(self, eventobj: Event):
         """

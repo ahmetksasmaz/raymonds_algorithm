@@ -142,7 +142,7 @@ Lines[98-109] This function is called when self node receives token message. We 
 1. **Memory Complexity:** Raymond's algorithm ensures that each critical section entry takes O(log n) time when processors are arranged in a K-ary tree, and each processor only needs to store O(log n) bits to track its O(1) neighbors.
 2. **Message Complexity:** In the worst scenario, the algorithm needs twice the length of the longest path in the tree for each critical section entry, which is N-1 for nodes arranged in a line, totaling 2*(N-1) message invocations. Yet, if all nodes generate an equal number of request messages, it will require roughly 2*N/3 messages per critical section entry.
 
-.. [SuzukiKasamiAlgorithm] Gerard Tel, Introduction to Distributed Algorithms, CAMBRIDGE UNIVERSITY PRESS, 2001
-.. [RaymondsAlgorithm] Wan Fokkink, Distributed Algorithms An Intuitive Approach, The MIT Press Cambridge, Massachusetts London, England, 2013
-.. [RicartAgrawalaAlgorithm] Leslie Lamport, K. Mani Chandy: Distributed Snapshots: Determining Global States of a Distributed System. In: ACM Transactions on Computer Systems 3. Nr. 1, Februar 1985.
-.. [MaekawasAlgorithm] Leslie Lamport, K. Mani Chandy: Distributed Snapshots: Determining Global States of a Distributed System. In: ACM Transactions on Computer Systems 3. Nr. 1, Februar 1985.
+.. [SuzukiKasamiAlgorithm] Suzuki, I., & Kasami, T. (1985). A distributed mutual exclusion algorithm. ACM Transactions on Computer Systems (TOCS), 3(4), 344-349.
+.. [RaymondsAlgorithm] Raymond, K. (1989). A tree-based algorithm for distributed mutual exclusion. ACM Transactions on Computer Systems (TOCS), 7(1), 61-77.
+.. [RicartAgrawalaAlgorithm] Ricart, G., & Agrawala, A. K. (1981). An optimal algorithm for mutual exclusion in computer networks. Communications of the ACM, 24(1), 9-17.
+.. [MaekawasAlgorithm] Maekawa, M. (1985). A sqrt(N) algorithm for mutual exclusion in decentralized systems. ACM Transactions on Computer Systems (TOCS), 3(2), 145-159.

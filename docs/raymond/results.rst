@@ -6,13 +6,53 @@ Implementation, Results and Discussion
 Implementation and Methodology
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Writing the methodology lies at the core of the paper, and fulfills one of the basic principles underlying the scientific method. Any scientific paper needs to be verifiable by other researchers, so that they can review the results by replicating the experiment and guaranteeing the validity. To assist this, you need to give a completely accurate description of the equipment and the techniques used for gathering the data [Shuttleworth2016]_.
+To implement the algorithm, we utilized an event-driven node from the adhoccomputing library. These nodes operate with an internal event queue.
 
-Other scientists are not going to take your word for it, and they want to be able to evaluate whether your methodology is sound. In addition, it is useful for the reader to understand how you obtained your data, because it allows them to evaluate the quality of the results. For example, if you were trying to obtain data about shopping preferences, you will obtain different results from a multiple-choice questionnaire than from a series of open interviews. Writing methodology allows the reader to make their own decision about the validity of the data. If the research about shopping preferences were built upon a single case study, it would have little external validity, and the reader would treat the results with the contempt that they deserve [Shuttleworth2016]_.
+Communication between nodes occurs via channels, which essentially represent the connections between them.
 
-Describe the materials and equipment used in the research. Explain how the samples were gathered, any randomization techniques and how the samples were prepared. Explain how the measurements were made and what calculations were performed upon the raw data. Describe the statistical techniques used upon the data [Shuttleworth2016]_.
+The algorithm comprises four main types of events:
 
-Present any important details of your implementation here.
+1. Requesting privilege
+2. Releasing privilege
+3. Sending request messages
+4. Sending reply messages
+
+For a deeper understanding and formal declarations regarding the algorithm, refer to the documentation.
+
+To evaluate the algorithm, we first establish an appropriate network topology. For Raymond's algorithm, a K-ary tree structure is utilized.
+
+Constructing a K-ary topology involves determining the number of nodes and the minimum and maximum number of children for each node.
+
+Starting from the root, nodes are added with a random count of children within the specified range.
+
+Ultimately, our randomized K-ary tree, adhering to the given constraints, is ready for use.
+
+Key Notes:
+
+1. When both the minimum and maximum number of nodes are set to 1, the topology behaves like a linked list.
+
+2. Setting both values to 2 results in a binary tree-like behavior.
+
+After setting up the topology, all nodes are activated.
+
+Subsequently, randomly selected nodes initiate requests for privilege, with timing following a Poisson distribution.
+
+The testing process waits for all nodes to no longer require privilege.
+
+Finally, data from all nodes is collected and analyzed to derive benchmark results, including:
+
+1. Total privilege requests
+2. Instances of duplicated privilege requests
+3. Total critical section usage
+4. Total critical section releases
+5. Count of received request messages
+6. Count of received token messages
+7. Count of sent request messages
+8. Count of sent token messages
+
+The correlation between the total privilege requests and the combined count of request and token messages indicates the message complexity.
+
+Furthermore, the relationship between total privilege requests and total critical section releases serves as practical evidence of absence of starvation and fairness within the system.
 
 Results
 ~~~~~~~~
