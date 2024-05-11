@@ -6,7 +6,7 @@ This module implements tester for Raymond's Algorithm
 
 # AHC Library
 from adhoccomputing.GenericModel import GenericModel
-from adhoccomputing.Generics import Event, EventTypes, ConnectorTypes
+from adhoccomputing.Generics import Event, EventTypes, ConnectorTypes, setAHCLogLevel
 from adhoccomputing.Experimentation.Topology import Topology
 from adhoccomputing.Networking.LinkLayer.GenericLinkLayer import GenericLinkLayer
 from adhoccomputing.Networking.LogicalChannels.GenericChannel import GenericChannel
@@ -62,6 +62,8 @@ def create_kary_tree_topology(n, min_child, max_child):
         total_number_of_left_node -= child_number
     return G
 
+setAHCLogLevel(61) # Crucial for tqdm printing
+
 topology = Topology()
 
 def main():
@@ -87,16 +89,22 @@ def main():
     parser.add_argument('-p','--privilege', help='Number of privilege request for random node in a test', required=True, type=int)
     parser.add_argument('-r','--rate', help='Poisson rate to generate privilege trigger for random node', required=True, type=int)
     parser.add_argument('-s','--scale', help='Using critical section time scale', required=True, type=float)
+    parser.add_argument('-v','--verbose', help='Verbose mode', action="store_true")
     args = vars(parser.parse_args())
 
+    verbose = args["verbose"]
+
     if args["min_child"] < 1:
-        print("Minimum number of child must be at least 1.")
+        if verbose == True:
+            print("Minimum number of child must be at least 1.")
         return 
     if args["max_child"] < args["min_child"]:
-        print("Maximum number of child must be at least minimum number of child.")
+        if verbose == True:
+            print("Maximum number of child must be at least minimum number of child.")
         return 
     if args["node"] - 1 < args["min_child"]:
-        print("Minimum number of child cannot be greater then total number of node - 1.")
+        if verbose == True:
+            print("Minimum number of child cannot be greater then total number of node - 1.")
         return 
 
     G = create_kary_tree_topology(args["node"], args["min_child"], args["max_child"])
