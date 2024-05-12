@@ -97,7 +97,7 @@
 %\end{frame}
 
 \begin{frame}{The Problem}
-\framesubtitle{Selecting ownere of a resource without any conflict}
+\framesubtitle{Selecting owner of a resource without any conflict}
 \begin{block}{Mutual Exclusion in Distributed Systems} 
 Mutual exclusion in distributed systems refers to the challenge of properly accessing a shared resource at any given time by different concurrent processes on different machines. The motivation is ensuring that only one process holds the resource and this resource is orderly accessed for all participants in the system by using coordination and synchronization systems.
 \end{block}
@@ -123,7 +123,7 @@ Think of a hundred worker company, and there is only one printer.
 \frametitle{The Proposed Solution}
 \framesubtitle{}
 
-Raymond's algorithm is based on K-ary tree where the root holds the token. While changing parents is frequent for a node, the algorithm guarantees that message complexity will be $O(logN)$ if the topology is structured properly.
+Raymond's algorithm is based on K-ary tree where the root holds the token. While changing parents is frequent for a node, the algorithm guarantees that message complexity will be $O(log_{K}N)$ if the topology is structured properly.
 
 That has advantages in terms of:
 
@@ -199,12 +199,13 @@ Raymond's algorithm is based on K-ary tree shaped topology. Every node has these
     \label{alg:raymondsalgorithm}
     \begin{algorithmic}[1]
     	\Implement {\algorithmlabel}{cf} 
-    	\Use {List of Channels} {channels} 
-    	\Use {Integer} {parent\_index} 
-    	\Use {Request Queue} {fifo\_queue}
+    	\Use {Integer} {self\_id} 
+    	\Use {Integer} {parent\_id} 
+    	\Use {Request Queue} {privilege\_queue}
     	\Use {Boolean} {using\_critical\_section}
-        \Use {Boolean} {has\_token}
-    	\Events{WantUsingCriticalSection, EndUsingCriticalSection, ReceiveRequestMessage, ReceiveTokenMessage}
+        \Use {Boolean} {has\_privilege}
+        \Use {Boolean} {want\_privilege}
+    	\Events{Init, WantUsingCriticalSection, EndUsingCriticalSection, ReceiveRequestMessage, ReceiveTokenMessage}
 	   \Need {}
     \end{algorithmic}
 \end{algorithm}
@@ -222,17 +223,10 @@ Raymond's algorithm is based on K-ary tree shaped topology. Every node has these
     \caption{\algorithmlabel\ algorithm}
     \label{alg:raymondsalgorithm}
     \begin{algorithmic}[1]
-        \Event {WantUsingCriticalSection}{ }
+        \Event {Init}{ }
             \begin{enumerate}
-                \item if using\_critical\_section = false then
-                \item \quad if has\_token = true then
-                \item \quad\quad using\_critical\_section ← true;
-                \item \quad else then
-                \item \quad\quad if fifo\_queue is empty then
-                \item \quad\quad\quad send request message into the channel channels[parent\_index];
-                \item \quad\quad end if
-                \item \quad\quad push -1 into fifo\_queue;
-                \item \quad end if
+                \item if self\_id = 0 then
+                \item \quad has\_privilege ← true;
                 \item end if
             \end{enumerate}
     \end{algorithmic}
@@ -250,13 +244,22 @@ Raymond's algorithm is based on K-ary tree shaped topology. Every node has these
     \caption{\algorithmlabel\ algorithm}
     \label{alg:raymondsalgorithm}
     \begin{algorithmic}[1]
-        \Event {EndUsingCriticalSection}{ }
+        \Event {WantUsingCriticalSection}{ }
             \begin{enumerate}
-                \item using\_critical\_section ← false;
-                \item if fifo\_queue is not empty then
-                \item \quad pop from fifo\_queue into i
-                \item \quad parent\_index ← find\_index(channels, i);
-                \item \quad send token message into the channel channels[parent\_index];
+                 \item if want\_privilege = false then
+                \item \quad if using\_critical\_section = false then
+                \item \quad \quad if has\_privilege = true then
+                \item \quad \quad \quad using\_critical\_section ← true;
+                \item \quad \quad else then
+                \item \quad \quad \quad want\_privilege ← true;
+                \item \quad \quad \quad if privilege\_queue is empty then
+                \item \quad \quad \quad \quad push self\_id into privilege\_queue;
+                \item \quad \quad \quad \quad send request message to node with parent\_id;
+                \item \quad \quad \quad else then
+                \item \quad \quad \quad \quad push self\_id into privilege\_queue;
+                \item \quad \quad \quad end if
+                \item \quad \quad end if
+                \item \quad end if
                 \item end if
             \end{enumerate}
     \end{algorithmic}
@@ -274,23 +277,20 @@ Raymond's algorithm is based on K-ary tree shaped topology. Every node has these
     \caption{\algorithmlabel\ algorithm}
     \label{alg:raymondsalgorithm}
     \begin{algorithmic}[1]
-        \Event {ReceiveRequestMessage}{ }
+        \Event {EndUsingCriticalSection}{ }
             \begin{enumerate}
-                \item if using\_critical\_section = false then
-                \item \quad if has\_token = true then
-                \item \quad\quad parent\_index ← find\_index(channels, i);
-                \item \quad\quad send token message into the channel channels[parent\_index];
-                \item \quad else then
-                \item \quad\quad if fifo\_queue is empty then
-                \item \quad\quad\quad send request message into the channel channels[parent\_index];
-                \item \quad\quad end if
-                \item \quad\quad push i into fifo\_queue;
+                \item using\_critical\_section ← false;
+                \item want\_privilege ← false;
+                \item if privilege\_queue is not empty then
+                \item \quad pop from privilege\_queue into $<$i$>$;
+                \item \quad parent\_index ← i;
+                \item \quad has\_privilege ← false;
+                \item \quad send token message to node with parent\_id;
+                \item \quad if privilege\_queue is not empty then
+                \item \quad \quad send request message to node with parent\_id;
                 \item \quad end if
-                \item else then
-                \item \quad push i into fifo\_queue;
                 \item end if
             \end{enumerate}
-
     \end{algorithmic}
 \end{algorithm}
 \end{center}
@@ -306,17 +306,55 @@ Raymond's algorithm is based on K-ary tree shaped topology. Every node has these
     \caption{\algorithmlabel\ algorithm}
     \label{alg:raymondsalgorithm}
     \begin{algorithmic}[1]
+        \Event {ReceiveRequestMessage}{ }
+            \begin{enumerate}
+                \item if using\_critical\_section = false then
+                \item \quad if has\_privilege = true then
+                \item \quad \quad parent\_index ← i;
+                \item \quad \quad has\_privilege ← false;
+                \item \quad \quad send token message to node with parent\_id;
+                \item \quad \quad if privilege\_queue is not empty then
+                \item \quad \quad \quad send request message to node with parent\_id;
+                \item \quad \quad end if
+                \item \quad else then
+                \item \quad \quad if privilege\_queue is empty then
+                \item \quad \quad \quad push $<$i$>$ into privilege\_queue;
+                \item \quad \quad \quad send request message to node with parent\_id;
+                \item \quad \quad else then
+                \item \quad \quad \quad push $<$i$>$ into privilege\_queue;
+                \item \quad \quad end if
+                \item \quad end if
+                \item else then
+                \item \quad push $<$i$>$ into privilege\_queue;
+                \item end if
+            \end{enumerate}
+
+    \end{algorithmic}
+\end{algorithm}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{Algorithm Pseudocode Part 6}
+
+\begin{center}
+\begin{algorithm}[H]
+	\scriptsize
+	\def\algorithmlabel{Raymond's}
+    \caption{\algorithmlabel\ algorithm}
+    \label{alg:raymondsalgorithm}
+    \begin{algorithmic}[1]
         \Event {ReceiveTokenMessage}{ }
             \begin{enumerate}
-                \item pop from fifo\_queue into j
-                \item if j = -1 then
-                \item \quad has\_token ← true;
+                \item pop from privilege\_queue into $<$j$>$
+                \item if j = self\_id then
+                \item \quad has\_privilege ← true;
                 \item \quad using\_critical\_section ← true;
                 \item else then
-                \item \quad parent\_index ← find\_index(channels, j);
-                \item \quad send token message into the channel channels[parent\_index];
-                \item \quad \quad if fifo\_queue is not empty then
-                \item \quad \quad send request message into the channel channels[parent\_index];
+                \item \quad parent\_index ← j;
+                \item \quad send token message to node with parent\_id;
+                \item \quad if privilege\_queue is not empty then
+                \item \quad \quad send request message to node with parent\_id;
                 \item \quad end if
                 \item end if
             \end{enumerate}
@@ -340,106 +378,49 @@ Raymond's algorithm is based on K-ary tree shaped topology. Every node has these
 \frametitle{Strength of The Algorithm}
 \framesubtitle{Complexity}
 \begin{itemize}
-    \item \textbf{Memory Complexity:} $O(logN)$
-    \item \textbf{Message Complexity:} $\frac{2N}{3}$
+    \item \textbf{Memory Complexity:} $O(K)$
+    \item \textbf{Message Complexity:} $O(log_{K}N)$ (Worst Case : $2(N-1)$)
 \end{itemize}
 \end{frame}
-
-\subsection{Main Point 3}
-\begin{frame}
-\frametitle{Main Point 3}
-\framesubtitle{Sketch a Proof of the Crucial Results}
-The emphasis is on the word ``sketch''. Give a very high-level description of the proofs, emphasizing the proof structure and the proof techniques used. If the proofs have no structure (in which case it may be assumed that you are not the author of the paper), then you must impose one on them. Gloss over the technical details. It is a good idea to point them out but not to explore them.
-\end{frame}
-
 
 \section{Experimental results/Proofs}
 
-\subsection{Main Result 1}
+\subsection{Message Complexity - Node Count}
 \begin{frame}
-\frametitle{Main Result 1}
+\frametitle{Message Complexity - Node Count}
 \framesubtitle{}
-Choose \textbf{just the key results}. They should be important, non-trivial, should give the flavour of the rest of the technical details and should be presentable in a relatively short period of time. Use figures instead of tables instead of text.
-
-Better to present 10\% the entire audience gets than 90\% nobody gets
+\begin{figure}
+    \centering
+    \includegraphics[scale=0.5]{figures/RaymondAlgorithmMessageComplexity.png}
+    \caption{Raymond Algorithm Message Complexity}
+    \label{fig:raymond_algoritm_message_complexity}
+\end{figure}
 \end{frame}
 
-
-\subsection{Main Result 2}
+\subsection{Message Complexity - Node Count \& K}
 \begin{frame}
-\frametitle{Main Result 2}
-\framesubtitle{Try a subtitle}
-\begin{itemize}
-\item Make sure your notation is clear and consistent throughout the talk. Prepare a slide that explains the notation in detail, in case that is needed or if somebody asks.
-\item Always label all of your axes on graphs; use short but helpful captions on figures and tables. It is also very useful to have an arrow on the side which clearly shows which direction is considered better (e.g., "up is better").
-\item If you have experimental results, make sure you clearly present the experimental paradigm you used, and the details of your methods, including the number of trials, the specific analysis tools you applied, significance testing, etc.
-\item The talk should contain at least a brief discussion of the limitations and weaknesses of the presented approach or results, in addition to their strengths. This, however, should be done in an objective manner -- don't enthusiastically put down your own work.
-\end{itemize}
-\end{frame}
-
-
-\subsection{Main Result 3}
-\begin{frame}
-\frametitle{Main Result 3}
+\frametitle{Message Complexity - Node Count \& K}
 \framesubtitle{}
-\begin{itemize}
-\item If time allows, the results should be compared to the most related work in the field. You should at least prepare one slide with a summary of the related work, even if you do not get a chance to discuss it. This will be helpful if someone asks about it, and will demonstrate your mastery of the material.
-\item Spell check again.
-\item Give for each of the x-axis, y-axis, and z-axis
-\item Label, unit, scale (if log scale)
-\item Give the legend
-\item Explain all symbols
-\item Take an example to illustrate a specific point in the figure
-\end{itemize}
+\begin{figure}
+    \centering
+    \includegraphics[scale=0.5]{figures/RaymondAlgorithmMessageComplexityPerK.png}
+    \caption{Raymond Algorithm Message Complexity Per K}
+    \label{fig:raymond_algoritm_message_complexity_per_k}
+\end{figure}
 \end{frame}
-
-
 
 \section{Conclusions}
 \begin{frame}
 \frametitle{Conclusions}
-\framesubtitle{Hindsight is Clearer than Foresight}
-Advices come from \cite{spillman2000present}.
+\framesubtitle{}
 \begin{itemize}
-\item You can now make observations that would have been confusing if they were introduced earlier. Use this opportunity to refer to statements that you have made in the previous three sections and weave them into a coherent synopsis. You will regain the attention of the non- experts, who probably didn’t follow all of the Technicalities section. Leave them feeling that they have learned something nonetheless.
-\item Give Open Problems It is traditional to end with a list of open problems that arise from your paper. Mention weaknesses of your paper, possible generalizations, and indications of whether they will be fruitful or not. This way you may defuse antagonistic questions during question time.
-\item Indicate that your Talk is Over
-An acceptable way to do this is to say “Thank-you. Are there any questions?”\cite{einstein}
+    \item Message Complexity
+    \item Memory Complexity
+    \item Node Failure
 \end{itemize}
 
 \end{frame}
-
-\section*{References}
-\begin{frame}{References}
-\tiny
-\bibliographystyle{IEEEtran}
-\bibliography{refs}
-\end{frame}
-
-\begin{frame}{How to prepare the talk?}
-Please read \url{http://larc.unt.edu/ian/pubs/speaker.pdf}
-\begin{itemize}
-\item The Introduction:  Define the Problem,    Motivate the Audience,    Introduce Terminology,    Discuss Earlier Work,    Emphasize the Contributions of your Paper,    Provide a Road-map.
-\item The Body:    Abstract the Major Results, Explain the Significance of the Results, Sketch a Proof of the Crucial Results
-\item Technicalities: Present a Key Lemma, Present it Carefully
-\item The Conclusion: Hindsight is Clearer than Foresight, Give Open Problems, Indicate that your Talk is Over
-\end{itemize}
-
-\note{
-\begin{itemize}
-\item The Introduction:  Define the Problem,    Motivate the Audience,    Introduce Terminology,    Discuss Earlier Work,    Emphasize the Contributions of your Paper,    Provide a Road-map.
-\item The Body:    Abstract the Major Results, Explain the Significance of the Results, Sketch a Proof of the Crucial Results
-\item Technicalities: Present a Key Lemma, Present it Carefully
-\item The Conclusion: Hindsight is Clearer than Foresight, Give Open Problems, Indicate that your Talk is Over 
-\end{itemize}
-}
-\end{frame}
-
-
 
 \thankslide
-
-
-
 
 \end{document}
