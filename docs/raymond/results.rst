@@ -57,37 +57,27 @@ Furthermore, the relationship between total privilege requests and total critica
 Results
 ~~~~~~~~
 
-Present your AHCv2 run results, plot figures.
+Theoretically, in the worst-case scenario, the entire topology is represented as a linked list, and when the bottom node sends a privilege request, a total of 2*(N-1) messages need to be transmitted. To generalize further, in the worst case, the number of messages to be generated in a topology based on a tree between the two nodes farthest apart from each other is twice the distance between them.
 
+In the experiments, the number of children a node can have in the topology is adjusted to be at least 1 and at most 16. The number of nodes in the experiments is in powers of 2.
 
-This is probably the most variable part of any research paper, and depends upon the results and aims of the experiment. For quantitative research, it is a presentation of the numerical results and data, whereas for qualitative research it should be a broader discussion of trends, without going into too much detail. For research generating a lot of results, then it is better to include tables or graphs of the analyzed data and leave the raw data in the appendix, so that a researcher can follow up and check your calculations. A commentary is essential to linking the results together, rather than displaying isolated and unconnected charts, figures and findings. It can be quite difficulty to find a good balance between the results and the discussion section, because some findings, especially in a quantitative or descriptive experiment, will fall into a grey area. As long as you not repeat yourself to often, then there should be no major problem. It is best to try to find a middle course, where you give a general overview of the data and then expand upon it in the discussion - you should try to keep your own opinions and interpretations out of the results section, saving that for the discussion [Shuttleworth2016]_.
+.. image:: figures/RaymondAlgorithmMessageComplexity.png
+  :width: 600
+  :alt: Raymond's Algorithm Message Complexity Graph
 
+The above figure illustrates the graph of the total number of messages per privilege request against the number of nodes in the topology on the horizontal axis and the total number of messages per privilege request on the vertical axis.
 
-.. .. image:: figures/CDFInterferecePowerFromKthNode2.png
-..   :width: 400
-..   :alt: Impact of interference power
+As observed, the number of messages per privilege request has not exceeded the value of 2*(N-1), and it approaches the value of logN.
 
+.. image:: figures/RaymondAlgorithmMessageComplexityPerK.png
+  :width: 600
+  :alt: Raymond's Algorithm Message Complexity Per K for Complete K-ary Tree Graph
 
-.. list-table:: Title
-   :widths: 25 25 50
-   :header-rows: 1
+The above figure illustrates the relationship between the number of nodes in the topology and the number of messages per privilege request for a fully populated k-ary tree, where k is the number of children per node.
 
-   * - Heading row 1, column 1
-     - Heading row 1, column 2
-     - Heading row 1, column 3
-   * - Row 1, column 1
-     -
-     - Row 1, column 3
-   * - Row 2, column 1
-     - Row 2, column 2
-     - Row 2, column 3
+As seen, when k equals 1, the system operates like a linked list, not exceeding the number of messages at 2*(N-1). As k increases, the number of messages approaches logK(N).
 
 Discussion
 ~~~~~~~~~~
 
-Present and discuss main learning points.
-
-
-
-
-.. [Shuttleworth2016] M. Shuttleworth. (2016) Writing methodology. `Online <https://explorable.com/writing-methodology>`_.
+In conclusion, we observe an algorithm where the number of messages is determined based on the structure of the topology, but the average density converges to approximately logK(N). We can observe that each node in the topology can accumulate up to K requests in its memory. It is a preferable algorithm in terms of message and memory complexity. However, if any node within the topology fails, it prevents all nodes below it from obtaining privileges. If the root node fails, only the nodes within the branch where the root node is located can have privileges. When K is large, the number of affected nodes increases. Conversely, when K decreases, the distance between the two farthest nodes increases, leading to an increase in the average number of messages per privilege request.
